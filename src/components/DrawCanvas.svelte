@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Socket } from 'socket.io-client';
-	import type { IDraw } from '../types/IDraw';
+	import type { DrawStatus, IDraw } from '../types/Draw';
 
 	import { onMount } from 'svelte';
 
@@ -19,14 +19,15 @@
 	export let onDrawCB: (data: IDraw) => void;
 	export let onMouseUpCB: (e: MouseEvent) => void;
 
+	export let status: DrawStatus;
+
 	let canvasRef: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null;
 	let canvasWidth: number | null;
 
 	onMount(() => {
 		/**
-		 * Bind the context when while the component
-		 * onMount, this will exclude the canvas in SSR
+		 * Bind the context when while the component onMount, this will exclude the canvas in SSR
 		 * process since the canvas context can only be found
 		 * inside the browser.
 		 **/
@@ -69,8 +70,12 @@
 	 */
 	function drawCanvas(e: MouseEvent, cb: (data: IDraw) => void) {
 		if (!ctx) return;
+
 		// If the user is not holding left mouse then stop
 		if (e.buttons !== 1) return;
+
+		// Set Eraser to ON
+		if (status === 'erase') ctx.globalCompositeOperation = 'destination-out';
 
 		// Begin a new path on the canvas context.
 		ctx.beginPath();
@@ -88,7 +93,8 @@
 		cb({
 			x: pos.x,
 			y: pos.y,
-			color: color
+			color: color,
+			status: status
 		});
 
 		// Start the line
@@ -102,6 +108,9 @@
 
 		// Draw
 		ctx.stroke();
+
+		// Set Eraser to OFF if enabled
+		if (status === 'erase') ctx.globalCompositeOperation = 'source-over';
 	}
 
 	/**
@@ -120,6 +129,9 @@
 			return;
 		}
 
+		// set eraser if enabled
+		if (data.status === 'erase') ctx.globalCompositeOperation = 'destination-out';
+
 		ctx.beginPath();
 
 		ctx.lineWidth = 20;
@@ -134,6 +146,9 @@
 		ctx.lineTo(forcedCoord.x, forcedCoord.y);
 
 		ctx.stroke();
+
+		// reset eraser if enabled
+		if (data.status === 'erase') ctx.globalCompositeOperation = 'source-over';
 	};
 
 	/**

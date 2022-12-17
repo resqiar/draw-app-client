@@ -33,6 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"daisyui": "^2.45.0",
 		"socket.io-client": "^4.5.4",
 		"svelte-awesome-color-picker": "^2.2.1"
 	}

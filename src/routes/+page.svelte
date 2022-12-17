@@ -1,8 +1,10 @@
 <script lang="ts">
 	import io from 'socket.io-client';
-	import type { IDraw } from '../types/IDraw';
+	import type { DrawStatus, IDraw } from '../types/Draw';
 	import DrawCanvas from '../components/DrawCanvas.svelte';
 	import ColorPicker from '../components/ColorPicker.svelte';
+	import Drawbutton from '../components/buttons/Drawbutton.svelte';
+	import EraseButton from '../components/buttons/EraseButton.svelte';
 
 	const socket = io('http://localhost:3333');
 
@@ -14,6 +16,12 @@
 	 * The color is picked by the user via ColorPicker component.
 	 */
 	let drawColor: string = '#fff';
+	/**
+	 * The drawing status whether user want to Draw or Erase
+	 * The behavior of the code and canvas differ based on the draw status.
+	 * All possible status defined in DrawStatus
+	 */
+	let drawStatus: DrawStatus = 'draw';
 
 	/**
 	 * onDrawCB is a function that is called from the child.
@@ -24,7 +32,8 @@
 		socket.emit('drawing', {
 			x: data.x,
 			y: data.y,
-			color: data.color
+			color: data.color,
+			status: data.status
 		});
 	}
 
@@ -50,12 +59,27 @@
 	<h1 class="text-2xl">Welcome to Draw Together</h1>
 
 	<div>
-		<div class="flex mx-4 my-6">
+		<div class="flex mx-4 my-6 items-center">
 			<ColorPicker bind:hex={drawColor} />
+
+			<div class="flex gap-4 mx-8">
+				<!-- DRAW BUTTON -->
+				<Drawbutton {drawStatus} on:click={() => (drawStatus = 'draw')} />
+
+				<!-- ERASE BUTTON -->
+				<EraseButton {drawStatus} on:click={() => (drawStatus = 'erase')} />
+			</div>
 		</div>
 
 		<div class="flex my-8 items-center justify-center bg-[#000]">
-			<DrawCanvas {socket} color={drawColor} {onDrawCB} onMouseUpCB={finishDraw} bind:forceDraw />
+			<DrawCanvas
+				{socket}
+				{onDrawCB}
+				color={drawColor}
+				onMouseUpCB={finishDraw}
+				status={drawStatus}
+				bind:forceDraw
+			/>
 		</div>
 	</div>
 </main>
