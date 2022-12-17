@@ -2,10 +2,18 @@
 	import io from 'socket.io-client';
 	import type { IDraw } from '../types/IDraw';
 	import DrawCanvas from '../components/DrawCanvas.svelte';
+	import ColorPicker from '../components/ColorPicker.svelte';
 
 	const socket = io('http://localhost:3333');
 
 	let forceDraw: (data: IDraw) => void;
+
+	/**
+	 * the 'color' exported variable stores the
+	 * user defined hexadecimal value of the drawing color.
+	 * The color is picked by the user via ColorPicker component.
+	 */
+	let drawColor: string = '#fff';
 
 	/**
 	 * onDrawCB is a function that is called from the child.
@@ -38,10 +46,16 @@
 	});
 </script>
 
-<h1 class="text-2xl">Welcome to Draw Together</h1>
+<main>
+	<h1 class="text-2xl">Welcome to Draw Together</h1>
 
-<div class="flex mx-4 my-6" />
+	<div>
+		<div class="flex mx-4 my-6">
+			<ColorPicker bind:hex={drawColor} />
+		</div>
 
-<div class="flex my-8 items-center justify-center bg-[#000]">
-	<DrawCanvas {socket} {onDrawCB} onMouseUpCB={finishDraw} bind:forceDraw />
-</div>
+		<div class="flex my-8 items-center justify-center bg-[#000]">
+			<DrawCanvas {socket} color={drawColor} {onDrawCB} onMouseUpCB={finishDraw} bind:forceDraw />
+		</div>
+	</div>
+</main>
