@@ -32,7 +32,7 @@
 		 * inside the browser.
 		 **/
 		ctx = canvasRef.getContext('2d');
-		canvasWidth = window.innerWidth;
+		canvasWidth = window.innerWidth - (window.innerWidth * 30) / 100;
 	});
 
 	/**
@@ -48,6 +48,12 @@
 	 * the value came from the parent and have a default value of #fff (white)
 	 */
 	export let color = '#FFF';
+	/**
+	 * the 'size' exported variable stores the
+	 * user defined value of the size of the drawing.
+	 * The number is then used by canvas to determine the shape.
+	 */
+	export let size: number = 10;
 
 	/**
 	 * This function sets the defined position based on Mouse position.
@@ -84,7 +90,7 @@
 		 * Set the line width, line cap, and stroke style for the canvas context.
 		 * All of these value below are user defined and coming from parent input.
 		 **/
-		ctx.lineWidth = 20;
+		ctx.lineWidth = size;
 		ctx.lineCap = 'round';
 		ctx.strokeStyle = color;
 
@@ -94,6 +100,7 @@
 			x: pos.x,
 			y: pos.y,
 			color: color,
+			size: size,
 			status: status
 		});
 
@@ -134,7 +141,7 @@
 
 		ctx.beginPath();
 
-		ctx.lineWidth = 20;
+		ctx.lineWidth = data.size;
 		ctx.lineCap = 'round';
 		ctx.strokeStyle = data.color;
 

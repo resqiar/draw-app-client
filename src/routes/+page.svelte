@@ -5,6 +5,7 @@
 	import ColorPicker from '../components/ColorPicker.svelte';
 	import Drawbutton from '../components/buttons/Drawbutton.svelte';
 	import EraseButton from '../components/buttons/EraseButton.svelte';
+	import { checkSize } from '../lib/checkSize';
 
 	const socket = io('http://localhost:3333');
 
@@ -22,6 +23,16 @@
 	 * All possible status defined in DrawStatus
 	 */
 	let drawStatus: DrawStatus = 'draw';
+	/**
+	 * the 'size' exported variable stores the
+	 * user defined value of the size of the drawing.
+	 * The number is then used by canvas to determine the shape.
+	 */
+	let drawSize: number | string = 10;
+
+	$: if (checkSize(drawSize as string) !== true) {
+		drawSize = checkSize(drawSize as string) as number;
+	}
 
 	/**
 	 * onDrawCB is a function that is called from the child.
@@ -33,6 +44,7 @@
 			x: data.x,
 			y: data.y,
 			color: data.color,
+			size: data.size,
 			status: data.status
 		});
 	}
@@ -56,30 +68,42 @@
 </script>
 
 <main>
-	<h1 class="text-2xl">Welcome to Draw Together</h1>
+	<div class="flex">
+		<div class="max-w-[70%]">
+			<div class="flex px-4 py-6 items-center shadow-xl">
+				<ColorPicker bind:hex={drawColor} />
 
-	<div>
-		<div class="flex mx-4 my-6 items-center">
-			<ColorPicker bind:hex={drawColor} />
+				<div class="flex items-center gap-4 mx-8">
+					<!-- DRAW BUTTON -->
+					<Drawbutton {drawStatus} on:click={() => (drawStatus = 'draw')} />
 
-			<div class="flex gap-4 mx-8">
-				<!-- DRAW BUTTON -->
-				<Drawbutton {drawStatus} on:click={() => (drawStatus = 'draw')} />
+					<!-- ERASE BUTTON -->
+					<EraseButton {drawStatus} on:click={() => (drawStatus = 'erase')} />
 
-				<!-- ERASE BUTTON -->
-				<EraseButton {drawStatus} on:click={() => (drawStatus = 'erase')} />
+					<!-- SIZE RANGE  -->
+					<div class="px-2 flex items-center gap-4">
+						<input type="range" bind:value={drawSize} min="0" max="100" class="range w-[300px]" />
+
+						<div class="form-control w-[70px]">
+							<input type="text" min="0" bind:value={drawSize} class="input input-bordered" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="flex my-8 items-center justify-center">
+				<DrawCanvas
+					{socket}
+					{onDrawCB}
+					size={Number(drawSize)}
+					color={drawColor}
+					onMouseUpCB={finishDraw}
+					status={drawStatus}
+					bind:forceDraw
+				/>
 			</div>
 		</div>
 
-		<div class="flex my-8 items-center justify-center bg-[#000]">
-			<DrawCanvas
-				{socket}
-				{onDrawCB}
-				color={drawColor}
-				onMouseUpCB={finishDraw}
-				status={drawStatus}
-				bind:forceDraw
-			/>
-		</div>
+		<div class="shadow-[0px_-5px_10px_2px_rgba(0,0,0,0.2)] h-[100px] w-[30%]">Hello</div>
 	</div>
 </main>
